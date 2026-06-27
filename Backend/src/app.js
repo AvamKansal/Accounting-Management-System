@@ -5,7 +5,9 @@ import authRoutes from "./routes/authRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
-
+import unitRoutes from "./routes/unitRoutes.js";
+import stockGroupRoutes from "./routes/stockGroupRoutes.js";
+import stockItemRoutes from "./routes/stockItemRoutes.js";
 
 const app = express();
 
@@ -15,6 +17,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/units", unitRoutes);
+app.use("/api/stock-groups", stockGroupRoutes);
+app.use("/api/stock-items", stockItemRoutes);
 
 app.get("/", (req, res) => {
   res.json({
