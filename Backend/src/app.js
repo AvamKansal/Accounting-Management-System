@@ -4,6 +4,7 @@ import pool from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
+import supplierRoutes from "./routes/supplierRoutes.js";
 
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/customers", customerRoutes);
+app.use("/api/suppliers", supplierRoutes);
 
 app.get("/", (req, res) => {
   res.json({
