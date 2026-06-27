@@ -3,6 +3,8 @@ import cors from "cors";
 import pool from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+
 
 const app = express();
 
@@ -10,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/company", companyRoutes);
+app.use("/api/customers", customerRoutes);
 
 app.get("/", (req, res) => {
   res.json({
