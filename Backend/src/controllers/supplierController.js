@@ -1,6 +1,8 @@
 import pool from "../config/db.js";
 
+// =========================
 // Create Supplier
+// =========================
 export const createSupplier = async (req, res) => {
   try {
     const company_id = req.company.id;
@@ -17,9 +19,37 @@ export const createSupplier = async (req, res) => {
       opening_balance,
     } = req.body;
 
+    if (!supplier_name) {
+      return res.status(400).json({
+        success: false,
+        message: "Supplier name is required.",
+      });
+    }
+
+    // Check duplicate supplier
+    const existingSupplier = await pool.query(
+      `
+      SELECT id
+      FROM suppliers
+      WHERE company_id = $1
+      AND LOWER(supplier_name) = LOWER($2)
+      `,
+      [company_id, supplier_name]
+    );
+
+    if (existingSupplier.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Supplier already exists.",
+      });
+    }
+
+    const balance = Number(opening_balance) || 0;
+
     const result = await pool.query(
       `
-      INSERT INTO suppliers (
+      INSERT INTO suppliers
+      (
         company_id,
         supplier_name,
         mobile,
@@ -29,48 +59,68 @@ export const createSupplier = async (req, res) => {
         state,
         pincode,
         gst_number,
-        opening_balance
+        opening_balance,
+        outstanding_balance
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      VALUES
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$10)
       RETURNING *
       `,
       [
         company_id,
         supplier_name,
-        mobile,
-        email,
-        address,
-        city,
-        state,
-        pincode,
-        gst_number,
-        opening_balance || 0,
+        mobile || null,
+        email || null,
+        address || null,
+        city || null,
+        state || null,
+        pincode || null,
+        gst_number || null,
+        balance,
       ]
     );
 
     res.status(201).json({
       success: true,
+      message: "Supplier created successfully.",
       supplier: result.rows[0],
     });
 
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
 
+// =========================
 // Get All Suppliers
+// =========================
 export const getSuppliers = async (req, res) => {
   try {
+
     const company_id = req.company.id;
 
     const result = await pool.query(
       `
-      SELECT *
+      SELECT
+        id,
+        supplier_name,
+        mobile,
+        email,
+        address,
+        city,
+        state,
+        pincode,
+        gst_number,
+        opening_balance,
+        outstanding_balance,
+        created_at
       FROM suppliers
       WHERE company_id = $1
       ORDER BY supplier_name ASC
@@ -84,18 +134,23 @@ export const getSuppliers = async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
 
+// =========================
 // Get Supplier By ID
+// =========================
 export const getSupplierById = async (req, res) => {
   try {
+
     const company_id = req.company.id;
     const { id } = req.params;
 
@@ -112,7 +167,7 @@ export const getSupplierById = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Supplier not found",
+        message: "Supplier not found.",
       });
     }
 
@@ -122,16 +177,21 @@ export const getSupplierById = async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: error.message,
     });
+
   }
 };
 
-// Placeholder for future implementation
+// =========================
+// Update Supplier
+// (Implemented in Day 11)
+// =========================
 export const updateSupplier = async (req, res) => {
   res.status(501).json({
     success: false,
@@ -139,6 +199,10 @@ export const updateSupplier = async (req, res) => {
   });
 };
 
+// =========================
+// Delete Supplier
+// (Implemented in Day 11)
+// =========================
 export const deleteSupplier = async (req, res) => {
   res.status(501).json({
     success: false,

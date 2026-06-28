@@ -8,6 +8,7 @@ import supplierRoutes from "./routes/supplierRoutes.js";
 import unitRoutes from "./routes/unitRoutes.js";
 import stockGroupRoutes from "./routes/stockGroupRoutes.js";
 import stockItemRoutes from "./routes/stockItemRoutes.js";
+import purchaseRoutes from "./routes/purchaseRoutes.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use("/api/suppliers", supplierRoutes);
 app.use("/api/units", unitRoutes);
 app.use("/api/stock-groups", stockGroupRoutes);
 app.use("/api/stock-items", stockItemRoutes);
+app.use("/api/purchases", purchaseRoutes);
 
 app.get("/", (req, res) => {
   res.json({
