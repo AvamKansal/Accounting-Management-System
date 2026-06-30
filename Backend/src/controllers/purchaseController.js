@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import {createLedgerEntry, getLedgerByName,} from "../helpers/ledgerHelper.js";
 
 // =========================
 // Create Purchase Voucher
@@ -205,7 +206,96 @@ export const createPurchase = async (req, res) => {
       ]
     );
 
-    await client.query("COMMIT");
+// =========================
+// Update Supplier Outstanding
+// =========================
+await client.query(
+  `
+  UPDATE suppliers
+  SET outstanding_balance =
+      COALESCE(outstanding_balance,0) + $1
+  WHERE id = $2
+  `,
+  [
+    total_amount,
+    supplier_id,
+  ]
+);
+
+// ========================================
+// Ledger Posting
+// ========================================
+
+// Purchase Account
+const purchaseLedger = await getLedgerByName(
+  client,
+  company_id,
+  "Purchase Account"
+);
+
+// Input GST
+const inputGSTLedger = await getLedgerByName(
+  client,
+  company_id,
+  "Input GST"
+);
+
+// Supplier Ledger
+const supplierLedgerResult = await client.query(
+  `
+  SELECT id
+  FROM ledgers
+  WHERE company_id = $1
+  AND reference_id = $2
+  `,
+  [company_id, supplier_id]
+);
+
+if (supplierLedgerResult.rows.length === 0) {
+  throw new Error("Supplier Ledger not found.");
+}
+
+const supplierLedger = supplierLedgerResult.rows[0];
+
+// Purchase Account DR
+await createLedgerEntry(
+  client,
+  company_id,
+  "PURCHASE",
+  purchase.id,
+  purchaseLedger.id,
+  "DR",
+  subtotal,
+  `Purchase Voucher ${voucher_number}`
+);
+
+// Input GST DR
+if (gst_amount > 0) {
+  await createLedgerEntry(
+    client,
+    company_id,
+    "PURCHASE",
+    purchase.id,
+    inputGSTLedger.id,
+    "DR",
+    gst_amount,
+    `Purchase Voucher ${voucher_number}`
+  );
+}
+
+// Supplier CR
+await createLedgerEntry(
+  client,
+  company_id,
+  "PURCHASE",
+  purchase.id,
+  supplierLedger.id,
+  "CR",
+  total_amount,
+  `Purchase Voucher ${voucher_number}`
+);
+
+await client.query("COMMIT");
 
     res.status(201).json({
       success: true,

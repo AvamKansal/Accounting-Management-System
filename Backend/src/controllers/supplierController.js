@@ -4,7 +4,11 @@ import pool from "../config/db.js";
 // Create Supplier
 // =========================
 export const createSupplier = async (req, res) => {
+  const client = await pool.connect();
+
   try {
+    await client.query("BEGIN");
+
     const company_id = req.company.id;
 
     const {
@@ -20,14 +24,16 @@ export const createSupplier = async (req, res) => {
     } = req.body;
 
     if (!supplier_name) {
+      await client.query("ROLLBACK");
+
       return res.status(400).json({
         success: false,
         message: "Supplier name is required.",
       });
     }
 
-    // Check duplicate supplier
-    const existingSupplier = await pool.query(
+    // Check Duplicate Supplier
+    const existingSupplier = await client.query(
       `
       SELECT id
       FROM suppliers
@@ -38,6 +44,8 @@ export const createSupplier = async (req, res) => {
     );
 
     if (existingSupplier.rows.length > 0) {
+      await client.query("ROLLBACK");
+
       return res.status(400).json({
         success: false,
         message: "Supplier already exists.",
@@ -46,7 +54,8 @@ export const createSupplier = async (req, res) => {
 
     const balance = Number(opening_balance) || 0;
 
-    const result = await pool.query(
+    // Create Supplier
+    const supplierResult = await client.query(
       `
       INSERT INTO suppliers
       (
@@ -80,13 +89,42 @@ export const createSupplier = async (req, res) => {
       ]
     );
 
+    const supplier = supplierResult.rows[0];
+
+    // Create Supplier Ledger
+    await client.query(
+      `
+      INSERT INTO ledgers
+      (
+        company_id,
+        ledger_name,
+        ledger_group,
+        opening_balance,
+        current_balance,
+        reference_id
+      )
+      VALUES
+      ($1,$2,'Sundry Creditors',$3,$3,$4)
+      `,
+      [
+        company_id,
+        supplier.supplier_name,
+        balance,
+        supplier.id,
+      ]
+    );
+
+    await client.query("COMMIT");
+
     res.status(201).json({
       success: true,
       message: "Supplier created successfully.",
-      supplier: result.rows[0],
+      supplier,
     });
 
   } catch (error) {
+
+    await client.query("ROLLBACK");
 
     console.error(error);
 
@@ -94,6 +132,10 @@ export const createSupplier = async (req, res) => {
       success: false,
       message: error.message,
     });
+
+  } finally {
+
+    client.release();
 
   }
 };
@@ -190,7 +232,6 @@ export const getSupplierById = async (req, res) => {
 
 // =========================
 // Update Supplier
-// (Implemented in Day 11)
 // =========================
 export const updateSupplier = async (req, res) => {
   res.status(501).json({
@@ -201,7 +242,6 @@ export const updateSupplier = async (req, res) => {
 
 // =========================
 // Delete Supplier
-// (Implemented in Day 11)
 // =========================
 export const deleteSupplier = async (req, res) => {
   res.status(501).json({
