@@ -10,6 +10,7 @@ import stockGroupRoutes from "./routes/stockGroupRoutes.js";
 import stockItemRoutes from "./routes/stockItemRoutes.js";
 import purchaseRoutes from "./routes/purchaseRoutes.js";
 import salesRoutes from "./routes/salesRoutes.js";
+import ledgerRoutes from "./routes/ledgerRoutes.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/stock-groups", stockGroupRoutes);
 app.use("/api/stock-items", stockItemRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/sales", salesRoutes);
+app.use("/api/ledgers", ledgerRoutes);
 
 app.get("/", (req, res) => {
   res.json({
