@@ -11,6 +11,8 @@ import stockItemRoutes from "./routes/stockItemRoutes.js";
 import purchaseRoutes from "./routes/purchaseRoutes.js";
 import salesRoutes from "./routes/salesRoutes.js";
 import ledgerRoutes from "./routes/ledgerRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import receiptRoutes from "./routes/receiptRoutes.js";
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use("/api/stock-items", stockItemRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/ledgers", ledgerRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/receipts", receiptRoutes);
 
 app.get("/", (req, res) => {
   res.json({
