@@ -13,6 +13,7 @@ import salesRoutes from "./routes/salesRoutes.js";
 import ledgerRoutes from "./routes/ledgerRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import receiptRoutes from "./routes/receiptRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/ledgers", ledgerRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/receipts", receiptRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
   res.json({
